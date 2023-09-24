@@ -1,0 +1,166 @@
+{% extends 'base.html' %}
+{% include 'header.html' %}
+
+{% block title %} Home {% endblock %}
+
+{% block body %}
+<div class="container">
+    <div class="row">
+        <div class="col md-12">
+
+            <div class="jumbotron p-3">
+
+                <h3>Manage your <b>Comics</b> <button type="button" class="btn btn-success float-right" data-toggle="modal" data-target="#addModal">Add New Comic</button> </h3>
+
+                <h3>Comics</h3>
+                <table class="table table-hover table-dark">
+                    <tr>
+                        <th>Identificator</th>
+                        <th>Name</th>
+                        <th>Number</th>
+                        <th>Hero</th>
+                        <th>Page Number</th>
+                        <th>Publisher</th>
+                        <th>Action</th>
+                    </tr>
+                    {% with messages = get_flashed_messages() %}
+                        {% if messages %}
+                         {% for message in messages %}
+                           <div class="alert alert-success alert-dismissable" role="alert">
+                              <button type="button" class="close" data-dismiss="alert" aria-label="close">
+                                <span aria-hidden="true">&times;</span>
+                                 </button>
+                                  {{ message }}
+                            </div>
+                         {% endfor %}
+                     {% endif %}
+                    {% endwith %}
+
+                    {% if comics %}
+                        {% for comic in comics %}
+                        <tr>
+                            <td>{{ comic.comic_identificator }}</td>
+                            <td>{{ comic.comic_name }}</td>
+                            <td>{{ comic.comic_number }}</td>
+                            <td>{{ comic.comic_hero }}</td>
+                            <td>{{ comic.comic_pageNum }}</td>
+                            <td>{{ comic.comic_publisher }}</td>
+                            <td>
+                                <a href="/update_comic/{{ comic.comic_identificator }}" class="btn btn-warning btn-xs" data-toggle="modal" data-target="#editModal{{ comic.comic_identificator }}">Edit</a>
+                                <a href="/delete_comic/{{ comic.comic_identificator }}" class="btn btn-danger btn-xs" onclick="return confirm('Are You Sure To Delete?')">Delete</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </table>
+                    {% else %}
+                        </table>
+                        <div class="alert alert-danger">
+                            You don't have this hero in your collection
+                        </div>
+                    {% endif %}
+
+                    <!-- Modal Edit Comic -->
+                    {% for comic in comics %}
+                    <div id="editModal{{ comic.comic_identificator }}" class="modal fade" role="dialog">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h4 class="modal-title">Update Comic</h4>
+                                </div>
+                                <div class="modal-body">
+                                    <form action="{{ url_for('update_comic') }}" method="POST">
+                                        <div class="form-group">
+                                            <label>Name:</label>
+                                            <input type="hidden" name="comic_identificator" value="{{ comic.comic_identificator }}">
+                                            <input type="text" class="form-control" name="comic_name" value="{{ comic.comic_name }}">
+                                            <input type="number" class="form-control" name="comic_number" value="{{ comic.comic_number }}">
+                                            <input type="text" class="form-control" name="comic_hero" value="{{ comic.comic_hero }}">
+                                            <input type="number" class="form-control" name="comic_pageNum" value="{{ comic.comic_pageNum }}">
+                                            <input type="text" class="form-control" name="comic_publisher" value="{{ comic.comic_publisher }}">
+                                        </div>
+                                        <div class="form-group">
+                                            <button class="btn btn-primary" type="submit">Update Comic</button>
+                                        </div>
+                                    </form>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="addModal" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Add New Comic</h4> <!-- Promenjen naslov -->
+            </div>
+            <div class="modal-body">
+                <form action="{{ url_for('insert_comic') }}" method="POST"> <!-- Promenjena akcija na 'insert_comic' -->
+                    <div class="form-group">
+                        <label>Comic Identificator</label> <!-- Promenjen naziv polja -->
+                        <input type="text" class="form-control" name="comic_identificator" required> <!-- Promenjen name atribut -->
+                    </div>
+                    <div class="form-group">
+                        <label>Name:</label>
+                        <input type="text" class="form-control" name="comic_name" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Number:</label>
+                        <input type="text" class="form-control" name="comic_number" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Hero:</label>
+                        <input type="text" class="form-control" name="comic_hero" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Page Number:</label>
+                        <input type="text" class="form-control" name="comic_pageNum" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Publisher:</label>
+                        <input type="text" class="form-control" name="comic_publisher" required>
+                    </div>
+                    <div class="form-group">
+                        <button class="btn btn-primary" type="submit">Add Comic</button> <!-- Promenjen naziv dugmeta -->
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+<h5>How many pages does your collection have?</h5>
+<form action="{{ url_for('calculate_total_pages') }}" method="GET">
+    <button class="btn btn-primary" type="sumbit">Count the pages</button>
+</form>
+<h5>Filter your comics</h5>
+<form action="{{ url_for('filter_comics') }}" method="POST" class="form-inline">
+    <div class="form-group">
+        <label for="hero_name">Filter by Hero:</label>
+        <input type="text" class="form-control" id="hero_name" name="hero_name" placeholder="Enter Hero Name">
+    </div>
+    <button type="submit" class="btn btn-primary">Filter</button>
+</form>
+<h5>Search for Comics</h5>
+<form action="{{ url_for('search_comics') }}" method="POST" class="form-inline">
+    <div class="form-group">
+        <label for="comic_name">Search by Comic Name:</label>
+        <input type="text" class="form-control" id="comic_name" name="comic_name" placeholder="Enter Comic Name">
+    </div>
+    <button type="submit" class="btn btn-primary">Search</button>
+</form>
+<h5>Get a Random Comic</h5>
+<form action="{{ url_for('random_comic') }}" method="GET">
+    <button class="btn btn-primary" type="submit">Get Random Comic</button>
+</form>
+
+{% endblock %}
